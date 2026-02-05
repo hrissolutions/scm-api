@@ -1,0 +1,70 @@
+model Item {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  organizationId String?  @db.ObjectId
+  sku            String   @unique
+  name           String
+  description    String?
+  category       Category @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  categoryId     String   @db.ObjectId
+  supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  supplierId     String   @db.ObjectId
+
+  // Item type
+  itemType ItemType @default(PRODUCT)
+
+  // Pricing
+  retailPrice  Float
+  sellingPrice Float
+  costPrice    Float?
+
+  // Inventory
+  stockQuantity     Int @default(0)
+  lowStockThreshold Int @default(10)
+
+  // Item details
+  imageUrl       String?
+  images         Json? // Array of ItemImage (structured images with type, name, url)
+  specifications Json?
+
+  // Status
+  isActive    Boolean    @default(true)
+  isFeatured  Boolean    @default(false)
+  isAvailable Boolean    @default(true)
+  status      ItemStatus @default(PENDING)
+
+  // Relations
+  // reviews           ItemReview[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([supplierId])
+  @@index([itemType])
+  @@index([organizationId])
+  @@map("items")
+}
+
+enum ItemType {
+  PRODUCT
+  LOAN
+}
+
+enum ItemStatus {
+  PENDING // Created by supplier, awaiting approval
+  APPROVED // Approved and visible in item listings
+  REJECTED // Rejected and not visible to normal users
+}
+
+enum ItemImageType {
+  COVER // Main cover/hero image
+  FEATURED // Featured images
+  GALLERY // Gallery images
+  THUMBNAIL // Thumbnail/preview image
+  PACKAGING // Item packaging image
+  DETAIL // Detail/close-up images
+  LIFESTYLE // Lifestyle/usage images
+  SIZE_CHART // Size chart image
+  INSTRUCTION // Instruction manual images
+  OTHER
+}
